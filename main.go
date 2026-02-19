@@ -9,7 +9,8 @@ func main() {
 	input := ""
 
 	for input != "q" {
-		stats := entities.GeneratePlayerStats()
+		player := entities.CreatePlayer()
+		stats := player.Stats
 		fmt.Printf("Your Stats:\nHealth: %d\nAttack: %d\nDefense: %d\nSpeed: %d\nMagic: %d\n",
 			stats.Health,
 			stats.Attack,

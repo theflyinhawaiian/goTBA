@@ -12,7 +12,7 @@ type Stats struct {
 	Magic   int
 }
 
-func GeneratePlayerStats() Stats {
+func generatePlayerStats() Stats {
 	// generate 5 random numbers, capping the sum at 41
 	statsRaw := make([]int, 5)
 	availablePoints := 25
