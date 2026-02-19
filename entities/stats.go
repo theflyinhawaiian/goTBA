@@ -1,18 +1,18 @@
-package main
+package entities
 
 import (
 	"math/rand"
 )
 
 type Stats struct {
-	health  int
-	attack  int
-	defense int
-	speed   int
-	magic   int
+	Health  int
+	Attack  int
+	Defense int
+	Speed   int
+	Magic   int
 }
 
-func generatePlayerStats() Stats {
+func GeneratePlayerStats() Stats {
 	// generate 5 random numbers, capping the sum at 41
 	statsRaw := make([]int, 5)
 	availablePoints := 25
@@ -38,10 +38,10 @@ func generatePlayerStats() Stats {
 	}
 
 	return Stats{
-		health:  playerStats[0],
-		attack:  playerStats[1],
-		defense: playerStats[2],
-		speed:   playerStats[3],
-		magic:   playerStats[4],
+		Health:  playerStats[0],
+		Attack:  playerStats[1],
+		Defense: playerStats[2],
+		Speed:   playerStats[3],
+		Magic:   playerStats[4],
 	}
 }
