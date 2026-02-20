@@ -2,23 +2,17 @@ package main
 
 import (
 	"fmt"
-	"tba/entities"
+	"tba/floorplan"
 )
 
 func main() {
 	input := ""
 
 	for input != "q" {
-		player := entities.CreatePlayer()
-		stats := player.Stats
-		fmt.Printf("Your Stats:\nHealth: %d\nAttack: %d\nDefense: %d\nSpeed: %d\nMagic: %d\n",
-			stats.Health,
-			stats.Attack,
-			stats.Defense,
-			stats.Speed,
-			stats.Magic)
+		// player := entities.CreatePlayer()
+		// stats := player.Stats
 
-		fmt.Println("Press enter or q to quit")
+		_ = floorplan.GenerateMap()
 
 		fmt.Scanln(&input)
 	}
