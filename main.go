@@ -12,7 +12,8 @@ func main() {
 		// player := entities.CreatePlayer()
 		// stats := player.Stats
 
-		_ = floorplan.GenerateMap()
+		levelMap := floorplan.GenerateMap()
+		floorplan.Illustrate(floorplan.Point{X: 100, Y: 100}, floorplan.Point{X: 100, Y: 100}, levelMap)
 
 		fmt.Scanln(&input)
 	}
