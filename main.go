@@ -13,7 +13,7 @@ func main() {
 		// stats := player.Stats
 
 		levelMap := floorplan.GenerateMap()
-		floorplan.Illustrate(floorplan.Point{X: 100, Y: 100}, floorplan.Point{X: 100, Y: 100}, levelMap)
+		floorplan.Illustrate(levelMap.Start, levelMap.End, levelMap.Grid)
 
 		fmt.Scanln(&input)
 	}

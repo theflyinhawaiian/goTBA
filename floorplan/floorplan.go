@@ -1,5 +1,7 @@
 package floorplan
 
 type Map struct {
-	Grid [][]Room
+	Start Point
+	End   Point
+	Grid  [][]Room
 }

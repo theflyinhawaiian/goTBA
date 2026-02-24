@@ -15,7 +15,7 @@ type Point struct {
 
 var offsets = []int{-1, 0, 1}
 
-func GenerateMap() [][]Room {
+func GenerateMap() Map {
 	// generate a 31x31 grid so we can guarantee we won't go out of grid bounds when generating
 	grid := make([][]Room, 31)
 	for i := range grid {
@@ -97,13 +97,31 @@ StartGeneration:
 		floorGrid[i] = make([]Room, max.Y-min.Y+1)
 	}
 
+	start := Point{X: 0}
+	end := Point{X: len(floorGrid) - 1}
 	for i := range floorGrid {
 		for j := range floorGrid[i] {
-			floorGrid[i][j] = grid[min.X+i][min.Y+j]
+			room := grid[min.X+i][min.Y+j]
+
+			validStartOrEndRoom := room.exists && getNeighborCount(i, j, floorGrid) == 1
+
+			switch {
+			case i == 0:
+				if validStartOrEndRoom && start.Y != 0 {
+					start.Y = j
+				}
+			case i == len(floorGrid)-1:
+				if validStartOrEndRoom && end.Y != 0 {
+					end.Y = j
+				}
+
+			}
+
+			floorGrid[i][j] = room
 		}
 	}
 
-	return floorGrid
+	return Map{Start: start, End: end, Grid: floorGrid}
 }
 
 func cls() {
@@ -118,25 +136,26 @@ func Illustrate(curr Point, new Point, grid [][]Room) {
 	deadEndCount := 0
 	roomCount := 0
 	for i := 0; i < len(grid); i++ {
+		line := ""
 		for j := 0; j < len(grid[i]); j++ {
 			if grid[i][j].exists {
 				roomCount++
 			}
 			switch {
 			case i == new.X && j == new.Y:
-				output += "*"
+				line += "*"
 			case i == curr.X && j == curr.Y:
-				output += "^"
+				line += "^"
 			case grid[i][j].connections == 1:
 				deadEndCount++
-				output += "X"
+				line += "X"
 			case grid[i][j].exists:
-				output += "O"
+				line += "O"
 			default:
-				output += "-"
+				line += "-"
 			}
 		}
-		output += "\n"
+		output = line + "\n" + output
 	}
 
 	fmt.Println(output)
@@ -148,7 +167,7 @@ func getLegalExits(x int, y int, grid [][]Room) []Point {
 		for _, j := range offsets {
 			// check cardinal directions only!
 			if (i == 0 || j == 0) && i != j {
-				neighborCount := getExistingNeighborCount(x+i, y+j, grid)
+				neighborCount := getNeighborCount(x+i, y+j, grid)
 				if neighborCount == 1 && !grid[x+i][y+j].exists {
 					exits = append(exits, Point{X: x + i, Y: y + j})
 				}
@@ -159,13 +178,17 @@ func getLegalExits(x int, y int, grid [][]Room) []Point {
 	return exits
 }
 
-func getExistingNeighborCount(x int, y int, grid [][]Room) int {
+func getNeighborCount(x int, y int, grid [][]Room) int {
 	numNeighbors := 0
 	for _, i := range offsets {
 		for _, j := range offsets {
 			// check cardinal directions only!
 			if (i == 0 || j == 0) && i != j {
-				if grid[x+i][y+j].exists {
+				neighborX, neighborY := x+i, y+j
+				if neighborX < 0 || neighborX >= len(grid) || neighborY < 0 || neighborY >= len(grid[neighborX]) {
+					continue
+				}
+				if grid[neighborX][neighborY].exists {
 					numNeighbors++
 				}
 			}
