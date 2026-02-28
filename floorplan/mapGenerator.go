@@ -97,24 +97,23 @@ StartGeneration:
 		floorGrid[i] = make([]Room, max.Y-min.Y+1)
 	}
 
-	start := Point{X: 0}
-	end := Point{X: len(floorGrid) - 1}
+	start := Point{X: -1, Y: 0}
+	end := Point{X: -1, Y: len(floorGrid[0]) - 1}
 	for i := range floorGrid {
 		for j := range floorGrid[i] {
 			room := grid[min.X+i][min.Y+j]
 
-			validStartOrEndRoom := room.exists && getNeighborCount(i, j, floorGrid) == 1
+			validStartOrEndRoom := room.exists && len(GetNeighborOffsets(min.X+i, min.Y+j, grid)) == 1
 
 			switch {
-			case i == 0:
-				if validStartOrEndRoom && start.Y != 0 {
-					start.Y = j
+			case j == 0:
+				if validStartOrEndRoom && start.X == -1 {
+					start.X = i
 				}
-			case i == len(floorGrid)-1:
-				if validStartOrEndRoom && end.Y != 0 {
-					end.Y = j
+			case j == len(floorGrid[i])-1:
+				if validStartOrEndRoom && end.X == -1 {
+					end.X = i
 				}
-
 			}
 
 			floorGrid[i][j] = room
@@ -170,7 +169,7 @@ func getLegalExits(x int, y int, grid [][]Room) []Point {
 		for _, j := range offsets {
 			// check cardinal directions only!
 			if (i == 0 || j == 0) && i != j {
-				neighborCount := getNeighborCount(x+i, y+j, grid)
+				neighborCount := len(GetNeighborOffsets(x+i, y+j, grid))
 				if neighborCount == 1 && !grid[x+i][y+j].exists {
 					exits = append(exits, Point{X: x + i, Y: y + j})
 				}
@@ -181,8 +180,8 @@ func getLegalExits(x int, y int, grid [][]Room) []Point {
 	return exits
 }
 
-func getNeighborCount(x int, y int, grid [][]Room) int {
-	numNeighbors := 0
+func GetNeighborOffsets(x int, y int, grid [][]Room) []Point {
+	neighbors := make([]Point, 0)
 	for _, i := range offsets {
 		for _, j := range offsets {
 			// check cardinal directions only!
@@ -192,11 +191,11 @@ func getNeighborCount(x int, y int, grid [][]Room) int {
 					continue
 				}
 				if grid[neighborX][neighborY].exists {
-					numNeighbors++
+					neighbors = append(neighbors, Point{X: i, Y: j})
 				}
 			}
 		}
 	}
 
-	return numNeighbors
+	return neighbors
 }
