@@ -17,11 +17,16 @@ func main() {
 		floorplan.Illustrate(levelMap.Start, levelMap.End, levelMap.Grid)
 
 		exits := floorplan.GetNeighborOffsets(playerPosition.X, playerPosition.Y, levelMap.Grid)
-		fmt.Printf("Exits are %s", GetExitDescription(exits))
+		if len(exits) == 1 {
+			fmt.Printf("There's an exit to the %s", GetExitDescription(exits))
+		} else {
+			fmt.Printf("There are exits to the %s", GetExitDescription(exits))
+		}
 		var choice string
 
 		fmt.Scanln(&choice)
 
+		fmt.Println("q to quit or we're going again")
 		fmt.Scanln(&input)
 	}
 
