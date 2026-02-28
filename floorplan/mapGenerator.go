@@ -135,9 +135,12 @@ func Illustrate(curr Point, new Point, grid [][]Room) {
 	output := ""
 	deadEndCount := 0
 	roomCount := 0
-	for i := 0; i < len(grid); i++ {
+	yLen := len(grid[0])
+	// Outer loop over Y (rows), high-to-low so positive Y is up
+	for j := yLen - 1; j >= 0; j-- {
 		line := ""
-		for j := 0; j < len(grid[i]); j++ {
+		// Inner loop over X (columns), low-to-high so positive X is right
+		for i := 0; i < len(grid); i++ {
 			if grid[i][j].exists {
 				roomCount++
 			}
@@ -155,7 +158,7 @@ func Illustrate(curr Point, new Point, grid [][]Room) {
 				line += "-"
 			}
 		}
-		output = line + "\n" + output
+		output += line + "\n"
 	}
 
 	fmt.Println(output)
