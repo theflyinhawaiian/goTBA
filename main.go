@@ -13,13 +13,12 @@ func main() {
 	input := ""
 	levelMap := fp.GenerateMap()
 	playerPosition := fp.Point{X: levelMap.Start.X, Y: levelMap.Start.Y}
+	gameWon := false
 
-	for input != "q" {
+	for input != "q" && !gameWon {
 		// player := entities.CreatePlayer()
 		// stats := player.Stats
-		cmd := exec.Command("cmd", "/c", "cls")
-		cmd.Stdout = os.Stdout
-		cmd.Run()
+		clearScreen()
 
 		fp.Illustrate(playerPosition, levelMap.End, levelMap.Grid)
 
@@ -49,9 +48,17 @@ func main() {
 		case fp.West:
 			playerPosition = fp.Point{X: playerPosition.X - 1, Y: playerPosition.Y}
 		}
+
+		if playerPosition == levelMap.End {
+			gameWon = true
+		}
 	}
 
-	fmt.Println("buh bye!")
+	if gameWon {
+		fmt.Println("You made it!")
+	} else {
+		fmt.Println("buh bye!")
+	}
 }
 
 func choiceStrToDirection(rawChoice string) fp.Direction {
@@ -106,4 +113,10 @@ func GetDirectionDescriptions(directions []fp.Direction) string {
 		panic("Ahhhhhh there are either zero or more than four exits, what is happening")
 	}
 
+}
+
+func clearScreen() {
+	cmd := exec.Command("cmd", "/c", "cls")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }
