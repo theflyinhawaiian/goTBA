@@ -2,61 +2,106 @@ package main
 
 import (
 	"fmt"
-	"tba/floorplan"
+	"os"
+	"os/exec"
+	"slices"
+	"strings"
+	fp "tba/floorplan"
 )
 
 func main() {
 	input := ""
+	levelMap := fp.GenerateMap()
+	playerPosition := fp.Point{X: levelMap.Start.X, Y: levelMap.Start.Y}
 
 	for input != "q" {
 		// player := entities.CreatePlayer()
 		// stats := player.Stats
+		cmd := exec.Command("cmd", "/c", "cls")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
 
-		levelMap := floorplan.GenerateMap()
-		playerPosition := floorplan.Point{X: levelMap.Start.X, Y: levelMap.Start.Y}
-		floorplan.Illustrate(levelMap.Start, levelMap.End, levelMap.Grid)
+		fp.Illustrate(playerPosition, levelMap.End, levelMap.Grid)
 
-		exits := floorplan.GetNeighborOffsets(playerPosition.X, playerPosition.Y, levelMap.Grid)
+		exits := fp.GetExitDirections(playerPosition.X, playerPosition.Y, levelMap.Grid)
 		if len(exits) == 1 {
-			fmt.Printf("There's an exit to the %s", GetExitDescription(exits))
+			fmt.Printf("There's an exit to the %s\n", GetDirectionDescriptions(exits))
 		} else {
-			fmt.Printf("There are exits to the %s", GetExitDescription(exits))
+			fmt.Printf("There are exits to the %s\n", GetDirectionDescriptions(exits))
 		}
-		var choice string
 
-		fmt.Scanln(&choice)
-
-		fmt.Println("q to quit or we're going again")
+		fmt.Println("What do?? ")
 		fmt.Scanln(&input)
+
+		dir := choiceStrToDirection(input)
+
+		if !slices.Contains(exits, dir) {
+			continue
+		}
+
+		switch dir {
+		case fp.North:
+			playerPosition = fp.Point{X: playerPosition.X, Y: playerPosition.Y + 1}
+		case fp.South:
+			playerPosition = fp.Point{X: playerPosition.X, Y: playerPosition.Y - 1}
+		case fp.East:
+			playerPosition = fp.Point{X: playerPosition.X + 1, Y: playerPosition.Y}
+		case fp.West:
+			playerPosition = fp.Point{X: playerPosition.X - 1, Y: playerPosition.Y}
+		}
 	}
 
 	fmt.Println("buh bye!")
 }
 
-func GetExitDescription(exits []floorplan.Point) string {
-	exitText := make([]string, 0)
-	for _, exit := range exits {
-		switch {
-		case exit.Y == 1:
-			exitText = append(exitText, "North")
-		case exit.Y == -1:
-			exitText = append(exitText, "South")
-		case exit.X == 1:
-			exitText = append(exitText, "East")
-		case exit.X == -1:
-			exitText = append(exitText, "West")
+func choiceStrToDirection(rawChoice string) fp.Direction {
+	choice := strings.ToLower(rawChoice)
+	switch choice {
+	case "n":
+		fallthrough
+	case "north":
+		return fp.North
+	case "s":
+		fallthrough
+	case "south":
+		return fp.South
+	case "e":
+		fallthrough
+	case "east":
+		return fp.East
+	case "w":
+		fallthrough
+	case "west":
+		return fp.West
+	}
+
+	return -1
+}
+
+func GetDirectionDescriptions(directions []fp.Direction) string {
+	directionText := make([]string, 0)
+	for _, direction := range directions {
+		switch direction {
+		case fp.North:
+			directionText = append(directionText, "North")
+		case fp.South:
+			directionText = append(directionText, "South")
+		case fp.East:
+			directionText = append(directionText, "East")
+		case fp.West:
+			directionText = append(directionText, "West")
 		}
 	}
 
-	switch len(exitText) {
+	switch len(directionText) {
 	case 1:
-		return exitText[0]
+		return directionText[0]
 	case 2:
-		return fmt.Sprintf("%s and %s", exitText[0], exitText[1])
+		return fmt.Sprintf("%s and %s", directionText[0], directionText[1])
 	case 3:
-		return fmt.Sprintf("%s, %s, and %s", exitText[0], exitText[1], exitText[2])
+		return fmt.Sprintf("%s, %s, and %s", directionText[0], directionText[1], directionText[2])
 	case 4:
-		return fmt.Sprintf("%s, %s, %s, and %s", exitText[0], exitText[1], exitText[2], exitText[3])
+		return fmt.Sprintf("%s, %s, %s, and %s", directionText[0], directionText[1], directionText[2], directionText[3])
 	default:
 		panic("Ahhhhhh there are either zero or more than four exits, what is happening")
 	}

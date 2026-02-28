@@ -199,3 +199,23 @@ func GetNeighborOffsets(x int, y int, grid [][]Room) []Point {
 
 	return neighbors
 }
+
+func GetExitDirections(x int, y int, grid [][]Room) []Direction {
+	exits := GetNeighborOffsets(x, y, grid)
+	directions := make([]Direction, 0)
+
+	for _, exit := range exits {
+		switch {
+		case exit.Y == 1:
+			directions = append(directions, North)
+		case exit.Y == -1:
+			directions = append(directions, South)
+		case exit.X == 1:
+			directions = append(directions, East)
+		case exit.X == -1:
+			directions = append(directions, West)
+		}
+	}
+
+	return directions
+}
