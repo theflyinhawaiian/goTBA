@@ -1,9 +1,12 @@
 package floorplan
 
+import "tba/entities"
+
 type Room struct {
 	exists      bool
 	connections int
-	nums        int
+	Enemies     []entities.Enemy
+	Items       []entities.Item
 }
 
 func createEmptyRoom() Room {

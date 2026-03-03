@@ -11,7 +11,7 @@ import (
 
 func main() {
 	input := ""
-	levelMap := fp.GenerateMap()
+	levelMap := fp.GenerateLevel()
 	playerPosition := fp.Point{X: levelMap.Start.X, Y: levelMap.Start.Y}
 	gameWon := false
 
@@ -20,7 +20,13 @@ func main() {
 		// stats := player.Stats
 		clearScreen()
 
-		fp.Illustrate(playerPosition, levelMap.End, levelMap.Grid)
+		//fp.Illustrate(playerPosition, levelMap.End, levelMap.Grid)
+
+		enemies := levelMap.Grid[playerPosition.X][playerPosition.Y].Enemies
+
+		if len(enemies) > 0 {
+			fmt.Printf("There is a %s in the room!\n", enemies[0].Name)
+		}
 
 		exits := fp.GetExitDirections(playerPosition.X, playerPosition.Y, levelMap.Grid)
 		if len(exits) == 1 {
@@ -47,10 +53,6 @@ func main() {
 			playerPosition = fp.Point{X: playerPosition.X + 1, Y: playerPosition.Y}
 		case fp.West:
 			playerPosition = fp.Point{X: playerPosition.X - 1, Y: playerPosition.Y}
-		}
-
-		if playerPosition == levelMap.End {
-			gameWon = true
 		}
 	}
 

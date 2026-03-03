@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"tba/entities"
 )
 
 type Point struct {
@@ -15,7 +16,13 @@ type Point struct {
 
 var offsets = []int{-1, 0, 1}
 
-func GenerateMap() Map {
+func GenerateLevel() Map {
+	levelMap := generateMap()
+
+	return placeEntities(levelMap)
+}
+
+func generateMap() Map {
 	// generate a 31x31 grid so we can guarantee we won't go out of grid bounds when generating
 	grid := make([][]Room, 31)
 	for i := range grid {
@@ -121,6 +128,24 @@ StartGeneration:
 	}
 
 	return Map{Start: start, End: end, Grid: floorGrid}
+}
+
+func placeEntities(initialMap Map) Map {
+	for i := range initialMap.Grid {
+		for j := range initialMap.Grid {
+			// Start/end rooms are reserved to not have stuff put in em
+			curr := Point{X: i, Y: j}
+			isReservedRoom := curr == initialMap.Start || curr == initialMap.End
+			if len(GetNeighborOffsets(i, j, initialMap.Grid)) == 1 && !isReservedRoom {
+				enemies := []entities.Enemy{entities.CreateGoblin()}
+				initialMap.Grid[i][j].Enemies = enemies
+			}
+		}
+	}
+
+	initialMap.Grid[initialMap.End.X][initialMap.End.Y].Enemies = []entities.Enemy{entities.CreateHobGoblin()}
+
+	return initialMap
 }
 
 func cls() {
