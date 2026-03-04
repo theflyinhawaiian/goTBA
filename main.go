@@ -4,12 +4,40 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"slices"
-	"strings"
-	fp "tba/floorplan"
+	"strconv"
 )
 
 func main() {
+
+	inputs := make(chan PlayerChoice)
+	events := Start(inputs)
+
+	var choice PlayerChoice
+	var input string
+
+	for event := range events {
+		clearScreen()
+		fmt.Printf("In state %s\n\n", event.Type.String())
+		for i, choice := range event.Choices {
+			fmt.Printf("%d. %s\n", i+1, choice.Text)
+		}
+
+		fmt.Print("What do? ")
+		fmt.Scanln(&input)
+
+		inputValue, err := strconv.Atoi(input)
+
+		if err != nil {
+			fmt.Println("try again!")
+		} else {
+			choice = event.Choices[inputValue-1]
+		}
+
+		inputs <- choice
+	}
+}
+
+/*func main() {
 	input := ""
 	levelMap := fp.GenerateLevel()
 	playerPosition := fp.Point{X: levelMap.Start.X, Y: levelMap.Start.Y}
@@ -115,7 +143,7 @@ func GetDirectionDescriptions(directions []fp.Direction) string {
 		panic("Ahhhhhh there are either zero or more than four exits, what is happening")
 	}
 
-}
+}*/
 
 func clearScreen() {
 	cmd := exec.Command("cmd", "/c", "cls")
