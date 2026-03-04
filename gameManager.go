@@ -104,7 +104,7 @@ func processExplorationChoice(choice string) GameEvent {
 func processCombatChoice(choice string) GameEvent {
 	switch choice {
 	case "fight":
-		return GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "fight"}, {Text: "explore"}}}
+		return GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "fight"}}}
 	case "inventory":
 		return GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{Text: "back"}, {Text: "equip"}}}
 	case "explore":
@@ -118,7 +118,7 @@ func processInventoryChoice(choice string) GameEvent {
 	switch choice {
 	case "back":
 		if prevState == Combat {
-			return GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "fight"}, {Text: "explore"}}}
+			return GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "fight"}}}
 		} else {
 			return GameEvent{Type: Exploring, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "combat"}}}
 		}
