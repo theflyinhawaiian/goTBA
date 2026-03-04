@@ -45,3 +45,18 @@ func generatePlayerStats() Stats {
 		Magic:   playerStats[4],
 	}
 }
+
+func GetEffectiveStats(player Player, items []Item) Stats {
+	effectiveStats := player.Stats
+	for _, item := range items {
+		effectiveStats = Stats{
+			Attack:  effectiveStats.Attack + item.Effects.Attack,
+			Defense: effectiveStats.Defense + item.Effects.Defense,
+			Health:  effectiveStats.Health + item.Effects.Health,
+			Magic:   effectiveStats.Magic + item.Effects.Magic,
+			Speed:   effectiveStats.Speed + item.Effects.Speed,
+		}
+	}
+
+	return effectiveStats
+}
