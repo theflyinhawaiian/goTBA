@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"tba/entities"
+	"tba/floorplan"
 	fp "tba/floorplan"
 )
 
@@ -48,10 +49,12 @@ var level fp.Map
 var state GameState
 var prevState GameState
 var player entities.Player
+var playerPosition floorplan.Point
 
 func Start(input chan PlayerChoice) <-chan GameEvent {
 	level = fp.GenerateLevel()
 	player = entities.CreatePlayer()
+	playerPosition = level.Start
 	updateState(Exploring)
 
 	events := make(chan GameEvent)
