@@ -138,7 +138,8 @@ func placeEntities(initialMap Map) Map {
 			isReservedRoom := curr == initialMap.Start || curr == initialMap.End
 			if len(GetNeighborOffsets(i, j, initialMap.Grid)) == 1 && !isReservedRoom {
 				enemies := []entities.Enemy{entities.CreateGoblin()}
-				initialMap.Grid[i][j].Enemies = enemies
+				val := safeAccess(i, j, initialMap.Grid)
+				val.Enemies = enemies
 			}
 		}
 	}
@@ -146,6 +147,15 @@ func placeEntities(initialMap Map) Map {
 	initialMap.Grid[initialMap.End.X][initialMap.End.Y].Enemies = []entities.Enemy{entities.CreateHobGoblin()}
 
 	return initialMap
+}
+
+func safeAccess(i int, j int, grid [][]Room) Room {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("[ERROR] i: %d, j: %d", i, j)
+		}
+	}()
+	return grid[i][j]
 }
 
 func cls() {
