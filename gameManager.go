@@ -41,13 +41,15 @@ type GameEvent struct {
 }
 
 type PlayerChoice struct {
-	Text                 string
-	ValidRepresentations []string
+	DisplayText string
+	Aliases     []string
+	raw         string
+	payload     interface{}
 }
 
-var ExploreEvent = GameEvent{Type: Exploring, Choices: []PlayerChoice{{Text: "[I]nventory"}, {Text: "[E]xplore"}, {Text: "[C]ombat"}}}
-var CombatEvent = GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "[I]nventory"}, {Text: "[E]xplore"}, {Text: "[F]ight"}}}
-var ManageInventoryEvent = GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{Text: "[B]ack"}, {Text: "[E]quip"}}}
+var ExploreEvent = GameEvent{Type: Exploring, Choices: []PlayerChoice{{DisplayText: "[I]nventory", raw: "inventory", Aliases: []string{"i", "inventory"}}}}
+var CombatEvent = GameEvent{Type: Combat, Choices: []PlayerChoice{{DisplayText: "[I]nventory", raw: "inventory", Aliases: []string{"i", "inventory"}}}}
+var ManageInventoryEvent = GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{DisplayText: "[B]ack", raw: "back", Aliases: []string{"b", "back"}}}}
 
 var level fp.Map
 var state GameState
@@ -67,22 +69,23 @@ func Start(input chan PlayerChoice) <-chan GameEvent {
 		var newEvent GameEvent
 
 		events <- ExploreEvent
+		availableChoices := ExploreEvent.Choices
 
 		for choice := range input {
-			fmt.Printf("player choice: %s\n", choice.Text)
 			switch state {
 			case Exploring:
-				newEvent = processExplorationChoice(choice.Text)
+				newEvent = processExplorationChoice(choice.DisplayText, availableChoices)
 			case Combat:
-				newEvent = processCombatChoice(choice.Text)
+				newEvent = processCombatChoice(choice.DisplayText, availableChoices)
 			case ManagingInventory:
-				newEvent = processInventoryChoice(choice.Text)
+				newEvent = processInventoryChoice(choice.DisplayText, availableChoices)
 			}
 
 			var hold string
 			fmt.Scanln(&hold)
 
 			updateState(newEvent.Type)
+			availableChoices = newEvent.Choices
 
 			events <- newEvent
 		}
@@ -92,12 +95,8 @@ func Start(input chan PlayerChoice) <-chan GameEvent {
 	return events
 }
 
-func processExplorationChoice(choice string) GameEvent {
+func processExplorationChoice(choice string, availableChoices []PlayerChoice) GameEvent {
 	switch choice {
-	case "explore":
-		return ExploreEvent
-	case "combat":
-		return CombatEvent
 	case "inventory":
 		return ManageInventoryEvent
 	default:
@@ -105,20 +104,16 @@ func processExplorationChoice(choice string) GameEvent {
 	}
 }
 
-func processCombatChoice(choice string) GameEvent {
+func processCombatChoice(choice string, availableChoices []PlayerChoice) GameEvent {
 	switch choice {
-	case "fight":
-		return CombatEvent
 	case "inventory":
 		return ManageInventoryEvent
-	case "explore":
-		return ExploreEvent
 	default:
 		panic("Bad combat choice")
 	}
 }
 
-func processInventoryChoice(choice string) GameEvent {
+func processInventoryChoice(choice string, availableChoices []PlayerChoice) GameEvent {
 	switch choice {
 	case "back":
 		if prevState == Combat {
@@ -126,8 +121,6 @@ func processInventoryChoice(choice string) GameEvent {
 		} else {
 			return ExploreEvent
 		}
-	case "equip":
-		return ManageInventoryEvent
 	default:
 		panic("Bad inventory choice")
 	}

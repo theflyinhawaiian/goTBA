@@ -19,7 +19,7 @@ func main() {
 		clearScreen()
 		fmt.Printf("In state %s\n\n", event.Type.String())
 		for i, choice := range event.Choices {
-			fmt.Printf("%d. %s\n", i+1, choice.Text)
+			fmt.Printf("%d. %s\n", i+1, choice.DisplayText)
 		}
 
 		fmt.Print("What do? ")
