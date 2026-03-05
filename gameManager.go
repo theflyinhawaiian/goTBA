@@ -45,6 +45,10 @@ type PlayerChoice struct {
 	ValidRepresentations []string
 }
 
+var ExploreEvent = GameEvent{Type: Exploring, Choices: []PlayerChoice{{Text: "[I]nventory"}, {Text: "[E]xplore"}, {Text: "[C]ombat"}}}
+var CombatEvent = GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "[I]nventory"}, {Text: "[E]xplore"}, {Text: "[F]ight"}}}
+var ManageInventoryEvent = GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{Text: "[B]ack"}, {Text: "[E]quip"}}}
+
 var level fp.Map
 var state GameState
 var prevState GameState
@@ -62,7 +66,7 @@ func Start(input chan PlayerChoice) <-chan GameEvent {
 		defer close(events)
 		var newEvent GameEvent
 
-		events <- GameEvent{Type: Exploring, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "combat"}}}
+		events <- ExploreEvent
 
 		for choice := range input {
 			fmt.Printf("player choice: %s\n", choice.Text)
@@ -91,11 +95,11 @@ func Start(input chan PlayerChoice) <-chan GameEvent {
 func processExplorationChoice(choice string) GameEvent {
 	switch choice {
 	case "explore":
-		return GameEvent{Type: Exploring, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "combat"}}}
+		return ExploreEvent
 	case "combat":
-		return GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "fight"}}}
+		return CombatEvent
 	case "inventory":
-		return GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{Text: "back"}, {Text: "equip"}}}
+		return ManageInventoryEvent
 	default:
 		panic("Bad exploration choice")
 	}
@@ -104,11 +108,11 @@ func processExplorationChoice(choice string) GameEvent {
 func processCombatChoice(choice string) GameEvent {
 	switch choice {
 	case "fight":
-		return GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "fight"}}}
+		return CombatEvent
 	case "inventory":
-		return GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{Text: "back"}, {Text: "equip"}}}
+		return ManageInventoryEvent
 	case "explore":
-		return GameEvent{Type: Exploring, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "combat"}}}
+		return ExploreEvent
 	default:
 		panic("Bad combat choice")
 	}
@@ -118,12 +122,12 @@ func processInventoryChoice(choice string) GameEvent {
 	switch choice {
 	case "back":
 		if prevState == Combat {
-			return GameEvent{Type: Combat, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "fight"}}}
+			return CombatEvent
 		} else {
-			return GameEvent{Type: Exploring, Choices: []PlayerChoice{{Text: "inventory"}, {Text: "explore"}, {Text: "combat"}}}
+			return ExploreEvent
 		}
 	case "equip":
-		return GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{Text: "back"}, {Text: "equip"}}}
+		return ManageInventoryEvent
 	default:
 		panic("Bad inventory choice")
 	}
