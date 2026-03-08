@@ -40,6 +40,9 @@ type GameEvent struct {
 	Choices     []PlayerChoice
 }
 
+type Choice interface {
+}
+
 type PlayerChoice struct {
 	DisplayText string
 	Aliases     []string
@@ -47,7 +50,7 @@ type PlayerChoice struct {
 	payload     interface{}
 }
 
-var ExploreEvent = GameEvent{Type: Exploring, Choices: []PlayerChoice{{DisplayText: "[I]nventory", raw: "inventory", Aliases: []string{"i", "inventory"}}}}
+var ExploreEvent = GameEvent{Type: Exploring}
 var CombatEvent = GameEvent{Type: Combat, Choices: []PlayerChoice{{DisplayText: "[I]nventory", raw: "inventory", Aliases: []string{"i", "inventory"}}}}
 var ManageInventoryEvent = GameEvent{Type: ManagingInventory, Choices: []PlayerChoice{{DisplayText: "[B]ack", raw: "back", Aliases: []string{"b", "back"}}}}
 
@@ -68,24 +71,25 @@ func Start(input chan PlayerChoice) <-chan GameEvent {
 		defer close(events)
 		var newEvent GameEvent
 
-		events <- ExploreEvent
-		availableChoices := ExploreEvent.Choices
+		starterEvent := ExploreEvent
+		starterEvent.Description = getDirectionDescriptions()
+		starterEvent.Choices = generateExplorationChoices()
+
+		events <- starterEvent
 
 		for choice := range input {
 			switch state {
 			case Exploring:
-				newEvent = processExplorationChoice(choice.DisplayText, availableChoices)
+				newEvent = processExplorationChoice(choice.raw)
 			case Combat:
-				newEvent = processCombatChoice(choice.DisplayText, availableChoices)
+				newEvent = processCombatChoice(choice.raw)
 			case ManagingInventory:
-				newEvent = processInventoryChoice(choice.DisplayText, availableChoices)
+				newEvent = processInventoryChoice(choice.raw)
 			}
 
-			var hold string
-			fmt.Scanln(&hold)
+			fp.Illustrate(playerPosition, fp.Point{}, level.Grid)
 
 			updateState(newEvent.Type)
-			availableChoices = newEvent.Choices
 
 			events <- newEvent
 		}
@@ -95,27 +99,92 @@ func Start(input chan PlayerChoice) <-chan GameEvent {
 	return events
 }
 
-func processExplorationChoice(choice string, availableChoices []PlayerChoice) GameEvent {
+func generateExplorationChoices() []PlayerChoice {
+	exits := fp.GetExitDirections(playerPosition.X, playerPosition.Y, level.Grid)
+	choices := make([]PlayerChoice, 0)
+	for _, direction := range exits {
+		choices = append(choices, DirectionalChoices[direction])
+	}
+
+	return append(choices, manageInventoryChoice)
+}
+
+func getDirectionDescriptions() string {
+	directions := fp.GetExitDirections(playerPosition.X, playerPosition.Y, level.Grid)
+	directionText := make([]string, 0)
+	for _, direction := range directions {
+		switch direction {
+		case fp.North:
+			directionText = append(directionText, "North")
+		case fp.South:
+			directionText = append(directionText, "South")
+		case fp.East:
+			directionText = append(directionText, "East")
+		case fp.West:
+			directionText = append(directionText, "West")
+		}
+	}
+
+	switch len(directionText) {
+	case 1:
+		return directionText[0]
+	case 2:
+		return fmt.Sprintf("%s and %s", directionText[0], directionText[1])
+	case 3:
+		return fmt.Sprintf("%s, %s, and %s", directionText[0], directionText[1], directionText[2])
+	case 4:
+		return fmt.Sprintf("%s, %s, %s, and %s", directionText[0], directionText[1], directionText[2], directionText[3])
+	default:
+		panic("Ahhhhhh there are either zero or more than four exits, what is happening")
+	}
+
+}
+
+func processExplorationChoice(choice string) GameEvent {
 	switch choice {
-	case "inventory":
+	case north:
+		playerPosition.Y += 1
+		event := ExploreEvent
+		event.Description = getDirectionDescriptions()
+		event.Choices = generateExplorationChoices()
+		return event
+	case south:
+		playerPosition.Y -= 1
+		event := ExploreEvent
+		event.Description = getDirectionDescriptions()
+		event.Choices = generateExplorationChoices()
+		return event
+	case east:
+		playerPosition.X += 1
+		event := ExploreEvent
+		event.Description = getDirectionDescriptions()
+		event.Choices = generateExplorationChoices()
+		return event
+	case west:
+		playerPosition.X -= 1
+		event := ExploreEvent
+		event.Description = getDirectionDescriptions()
+		event.Choices = generateExplorationChoices()
+		return event
+	case inventory:
 		return ManageInventoryEvent
 	default:
 		panic("Bad exploration choice")
 	}
 }
 
-func processCombatChoice(choice string, availableChoices []PlayerChoice) GameEvent {
+func processCombatChoice(choice string) GameEvent {
 	switch choice {
-	case "inventory":
+	case inventory:
 		return ManageInventoryEvent
 	default:
 		panic("Bad combat choice")
 	}
 }
 
-func processInventoryChoice(choice string, availableChoices []PlayerChoice) GameEvent {
+func processInventoryChoice(choice string) GameEvent {
 	switch choice {
-	case "back":
+	case back:
 		if prevState == Combat {
 			return CombatEvent
 		} else {
